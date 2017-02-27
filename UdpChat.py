@@ -1,5 +1,9 @@
 import argparse
+import re
 import unittest
+
+class ArgsException(Exception):
+    pass
 
 def main():
     parse_command_line()
@@ -31,12 +35,29 @@ def extract_client_args(result):
     server_port = result.client[2]
     client_port = result.client[3]
 
+    ip_address_pattern = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
+
+    if not ip_address_pattern.match(server_address):
+        raise ArgsException
+
     return {
         'client_name': client_name,
         'server_address': server_address,
         'server_port': server_port,
         'client_port': client_port
     }
+
+class RegexTestCase(unittest.TestCase):
+    def setUp(self):
+        self.ip_address_pattern = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
+
+    def test_ip_address(self):
+        match = self.ip_address_pattern.match("192.168.1.1")
+        self.assertEqual(match.group(), "192.168.1.1")
+
+    def test_bad_ip_address(self):
+        match = self.ip_address_pattern.match("192.168..1")
+        self.assertIsNone(match)
 
 class CommandLineTestCase(unittest.TestCase):
     def setUp(self):
@@ -56,15 +77,26 @@ class CommandLineTestCase(unittest.TestCase):
         self.assertEqual(result.client[3], "2000")
 
     def test_extract_client_args(self):
-        args = ["-c", "testName", "198.123.75", "1024", "2000"]
+        args = ["-c", "testName", "198.123.75.45", "1024", "2000"]
         result = self.parser.parse_args(args)
         extracted_results = extract_client_args(result)
         self.assertEqual(extracted_results['client_name'], "testName")
-        self.assertEqual(extracted_results['server_address'], "198.123.75")
+        self.assertEqual(extracted_results['server_address'], "198.123.75.45")
         self.assertEqual(extracted_results['server_port'], "1024")
         self.assertEqual(extracted_results['client_port'], "2000")
+
+    def test_validate_client_args(self):
+        args = self.parser.parse_args("-c abc 112341 1024 1024".split())
+        self.assertRaises(ArgsException, extract_client_args, args)
+
+        args = self.parser.parse_args("-c abc 192.168..1 1024 1024".split())
+        self.assertRaises(ArgsException, extract_client_args, args)
+
+        args = self.parser.parse_args("-c abc 19268..1 1024 1024".split())
+        self.assertRaises(ArgsException, extract_client_args, args)
+
 
 
 if __name__ == "__main__":
     unittest.main()
-    main()
+    # main()
