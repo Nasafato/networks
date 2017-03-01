@@ -1,31 +1,36 @@
 import socket
 import sys
+import json
 
+from message import MessageTypes, createMessage
 
 class Client:
-    def __init__(self, nickname, server_address, port, server_port):
+    def __init__(self, nickname, server_address, server_port, port):
         self.in_prompt = False
         self.nickname = nickname
         self.server_address = server_address
-        self.port = port
         self.server_port = server_port
+        self.port = port
 
     def register(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         server_address = (self.server_address, self.server_port)
-        message = "Test message from client to server"
+
+        message = createMessage(
+            MessageTypes.REGISTER,
+            {
+                'client_name': self.nickname,
+                'client_port': self.port
+            }
+        )
+
+        serialized = json.dumps(message)
 
         try:
-            print >>sys.stderr, 'sending "%s"' % message
-            sent = sock.sendto(message, server_address)
-
-            print >>sys.stderr, 'waiting to receive'
+            sent = sock.sendto(serialized, server_address)
             data, server = sock.recvfrom(4096)
-            print "received message: {}".format(data)
-
-
         finally:
-            print >>sys.stderr, 'closing socket'
+            print >>sys.stderr, '>>> [Welcome, You are registered.]'
             sock.close()
 
 

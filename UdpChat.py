@@ -2,8 +2,8 @@ import argparse
 import re
 import unittest
 
-import Client
-import Server
+from server import Server
+from client import Client
 
 class ArgsException(Exception):
     pass
@@ -15,11 +15,11 @@ def parse_command_line():
     parser = create_parser()
     args = parser.parse_args()
     if args.server:
-        server = Server.Server()
+        server = Server(args.server)
         server.start()
     elif args.client:
         client_args = extract_client_args(args)
-        client = Client.Client(
+        client = Client(
             client_args['client_name'],
             client_args['server_address'],
             client_args['server_port'],
@@ -32,7 +32,7 @@ def parse_command_line():
 def create_parser():
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("-s", "--server", help="Start server")
+    group.add_argument("-s", "--server", help="Start server", type=int)
     group.add_argument("-c", "--client", help="Start client",
         nargs=4,
         action="store")
@@ -89,9 +89,9 @@ class CommandLineTestCase(unittest.TestCase):
         self.parser = create_parser()
 
     def test_server(self):
-        args = ["-s", "1234"]
+        args = "-s 1234".spli()
         result = self.parser.parse_args(args)
-        self.assertEqual(result.server, "1234")
+        self.assertEqual(result.server, 1234)
 
     def test_client(self):
         args = ["-c", "testName", "198.123.75", "1024", "2000"]
@@ -102,7 +102,7 @@ class CommandLineTestCase(unittest.TestCase):
         self.assertEqual(result.client[3], "2000")
 
     def test_extract_client_args(self):
-        args = ["-c", "testName", "198.123.75.45", "1024", "2000"]
+        args = "-c testName 198.123.75.45 1024 2000".split()
         result = self.parser.parse_args(args)
         extracted_results = extract_client_args(result)
         self.assertEqual(extracted_results['client_name'], "testName")
