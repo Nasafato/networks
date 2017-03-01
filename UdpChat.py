@@ -38,7 +38,23 @@ def extract_client_args(result):
     ip_address_pattern = re.compile('\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
 
     if not ip_address_pattern.match(server_address):
-        raise ArgsException
+        raise ArgsException("IP address not valid")
+
+    try:
+        server_port = int(server_port)
+    except ValueError:
+        raise ArgsException("Error - server port is not a valid integer")
+
+    try:
+        client_port = int(client_port)
+    except ValueError:
+        raise ArgsException("Error - client port is not a valid integer")
+
+    if client_port < 0 or client_port > 65535:
+        raise ArgsException("Client port must be between 0 and 65535")
+
+    if server_port < 0 or server_port > 65535:
+        raise ArgsException("Server port must be between 0 and 65535")
 
     return {
         'client_name': client_name,
@@ -82,8 +98,8 @@ class CommandLineTestCase(unittest.TestCase):
         extracted_results = extract_client_args(result)
         self.assertEqual(extracted_results['client_name'], "testName")
         self.assertEqual(extracted_results['server_address'], "198.123.75.45")
-        self.assertEqual(extracted_results['server_port'], "1024")
-        self.assertEqual(extracted_results['client_port'], "2000")
+        self.assertEqual(extracted_results['server_port'], 1024)
+        self.assertEqual(extracted_results['client_port'], 2000)
 
     def test_validate_client_args(self):
         args = self.parser.parse_args("-c abc 112341 1024 1024".split())
@@ -94,6 +110,19 @@ class CommandLineTestCase(unittest.TestCase):
 
         args = self.parser.parse_args("-c abc 19268..1 1024 1024".split())
         self.assertRaises(ArgsException, extract_client_args, args)
+
+        args = self.parser.parse_args("-c abc 192.168.1.1 abc 1024".split())
+        self.assertRaises(ArgsException, extract_client_args, args)
+
+        args = self.parser.parse_args("-c abc 192.168.1.1 65537 1024".split())
+        self.assertRaises(ArgsException, extract_client_args, args)
+
+        args = self.parser.parse_args("-c abc 192.168.1.1 1024 65537".split())
+        self.assertRaises(ArgsException, extract_client_args, args)
+
+        args = self.parser.parse_args("-c abc 192.168.1.1 1024 abc".split())
+        self.assertRaises(ArgsException, extract_client_args, args)
+
 
 
 
