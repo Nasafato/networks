@@ -2,6 +2,9 @@ import argparse
 import re
 import unittest
 
+import Client
+import Server
+
 class ArgsException(Exception):
     pass
 
@@ -11,14 +14,20 @@ def main():
 def parse_command_line():
     parser = create_parser()
     args = parser.parse_args()
-    print(args)
     if args.server:
-        print("Server started")
+        server = Server.Server()
+        server.start()
     elif args.client:
-        print("Client started")
+        client_args = extract_client_args(args)
+        client = Client.Client(
+            client_args['client_name'],
+            client_args['server_address'],
+            client_args['server_port'],
+            client_args['client_port']
+        )
+        client.start()
     else:
         raise Exception("No arguments")
-
 
 def create_parser():
     parser = argparse.ArgumentParser()
@@ -124,8 +133,6 @@ class CommandLineTestCase(unittest.TestCase):
         self.assertRaises(ArgsException, extract_client_args, args)
 
 
-
-
 if __name__ == "__main__":
-    unittest.main()
-    # main()
+    # unittest.main()
+    main()
