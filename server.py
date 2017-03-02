@@ -23,11 +23,12 @@ class Server:
     def _deregister_client(self, data):
         client_name = data['offline_client']
         self.table.deregister_client(client_name)
+        self._save_offline_message(data)
 
     def _save_offline_message(self, data):
         message = data['message']
         client_name = data['offline_client']
-        if not  self.table.is_client_offline(client_name):
+        if not self.table.is_client_offline(client_name):
             raise SaveMessageException("Client is not offline")
 
         self.table.save_offline_message(client_name, message)

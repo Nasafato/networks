@@ -152,7 +152,6 @@ class Client:
         messageState = message['state']
         messageData = message['data']
 
-
         if messageType == MessageTypes.BROADCAST and messageState == MessageStates.SUCCESS:
             if not self.table:
                 self.table = ClientTable()
@@ -163,6 +162,11 @@ class Client:
             self._send_ack_response(address)
         elif messageType == MessageTypes.SEND and messageState == MessageStates.RESPONSE:
             self._handle_ack(messageData, address)
+        elif messageType == MessageTypes.SAVE and messageState == MessageStates.SUCCESS:
+            self._print('[Messages received by the server and saved]')
+        elif messageType == MessageTypes.OFFLINE and messageState == MessageStates.SUCCESS:
+            self._print('[No ACK from {}, message sent to server.]'.format(messageData['offline_client']))
+            self._print('[Messages received by the server and saved]')
         else:
             return {
                 'type': MessageTypes.UNKNOWN,
