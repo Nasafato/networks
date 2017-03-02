@@ -14,6 +14,9 @@ class ClientTable:
         }
         return self.table
 
+    def update(self, new_table):
+        self.table = new_table
+
     def deregister_client(self, name):
         del self.table[name]
         return self.table

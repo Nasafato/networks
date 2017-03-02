@@ -12,6 +12,7 @@ class Client:
         self.server_address = server_address
         self.server_port = server_port
         self.port = port
+        self.table = ClientTable()
         self.client_socket = None
         self.running = True
 
@@ -64,7 +65,8 @@ class Client:
         messageData = message['data']
 
         if messageType == MessageTypes.BROADCAST and messageState == MessageStates.SUCCESS:
-            # self._print(messageData)
+            self.table.update(messageData)
+            self._print(self.table)
         else:
             return {
                 'type': MessageTypes.UNKNOWN,
