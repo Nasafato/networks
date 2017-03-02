@@ -1,27 +1,17 @@
 import pprint
+import json
 
-class Entry:
-    def __init__(self, name, address, port):
-        self.name = name
-        self.address = address
-        self.port = port
-
-    def __repr__(self):
-        return pprint.pformat({
-            'name': self.name,
-            'address': self.address,
-            'port': self.port
-        })
-
-    def get_address(self):
-        return self.address
 
 class ClientTable:
     def __init__(self):
         self.table = {}
 
     def register_client(self, name, address, port):
-        self.table[name] = Entry(name, address, port)
+        self.table[name] = {
+            'name': name,
+            'address': address,
+            'port': port
+        }
         return self.table
 
     def deregister_client(self, name):
@@ -29,7 +19,7 @@ class ClientTable:
         return self.table
 
     def get_entries(self):
-        return self.table.items()
+        return self.table.values()
 
     def __repr__(self):
         return pprint.pformat(self.table)

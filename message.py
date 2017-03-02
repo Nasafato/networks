@@ -4,7 +4,11 @@ import pickle
 def enum(**enums):
     return type('Enum', (), enums)
 
-MessageTypes = enum(REGISTER='REGISTER', DEREGISTER='DEREGISTER', UPDATE='UPDATE', UNKNOWN='UNKNOWN')
+MessageTypes = enum(REGISTER='REGISTER',
+    DEREGISTER='DEREGISTER',
+    BROADCAST='BROADCAST',
+    UPDATE='UPDATE',
+    UNKNOWN='UNKNOWN')
 MessageStates = enum(REQUEST='REQUEST', SUCCESS='SUCCESS', FAILURE='FAILURE')
 
 class MessageTypesTestCase(unittest.TestCase):

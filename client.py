@@ -1,6 +1,7 @@
 import socket
 import sys
 import json
+import threading
 
 from table import ClientTable
 from message import MessageTypes, MessageStates, createMessage
@@ -12,9 +13,10 @@ class Client:
         self.server_address = server_address
         self.server_port = server_port
         self.port = port
+        self.client_socket = None
 
     def register(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         server_address = (self.server_address, self.server_port)
 
         message = createMessage(
@@ -29,12 +31,13 @@ class Client:
         serialized = json.dumps(message)
 
         try:
-            sent = sock.sendto(serialized, server_address)
+            sent = self.client_sock.sendto(serialized, server_address)
             data, server = sock.recvfrom(10000)
-        finally:
-            print data
-            print >>sys.stderr, '>>> [Welcome, You are registered.]'
+        except socket.error:
+            print >>sys.stderr, '>>> [Socket error - exiting ]'
             sock.close()
+
+    def _run(self):
 
 
     def start(self, prompt=True):

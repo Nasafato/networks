@@ -24,6 +24,21 @@ class Server:
         # print "Registering client {} at {}:{}".format(data['name'], address, data['port'])
         # print "New table is {}".format(new_table)
 
+    def _broadcast_table(self):
+        try:
+            for entry in self.table.get_entries():
+                client_address = entry['address']
+                print "Broadcasting to {}".format(client_address)
+                response = {
+                    'type': MessageTypes.BROADCAST,
+                    'state': MessageStates.SUCCESS,
+                    'data': self.table.table
+                }
+                sent = self.server_socket.sendto(json.dumps(response), client_address)
+                print sent
+        except socket.error:
+            print "Couldn't send to client"
+
     def _deregister_client(self, name):
         new_table = self.table.deregister_client(name)
 
@@ -41,9 +56,11 @@ class Server:
 
         if messageType == MessageTypes.REGISTER and messageState == MessageStates.REQUEST:
             self._register_client(messageData, address)
+            self._broadcast_table()
             return {
                 'type': MessageTypes.REGISTER,
-                'state': MessageStates.SUCCESS
+                'state': MessageStates.SUCCESS,
+                'data': self.table.table
             }
         else:
             return {
