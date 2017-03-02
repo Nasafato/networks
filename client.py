@@ -24,26 +24,27 @@ class Client:
 
     def _send_ack_response(self, address):
         try:
-            sent = self.client_socket.sendto(json.dumps(createMessage(
+            sent = self.client_socket.sendto(createMessage(
                 MessageTypes.SEND,
                 MessageStates.RESPONSE,
                 {
                     'responder_name': self.nickname
                 }
-            )), address)
+            ), address)
         except socket.error:
             self._print("Error: socket error while sending ack")
 
     def _mark_client_offline(self, client_name, message):
+        messageData =   {
+            'offline_client': client_name,
+            'message': message
+        }
         try:
-            sent = self.client_socket.sendto(json.dumps(createMessage(
+            sent = self.client_socket.sendto(createMessage(
                 MessageTypes.OFFLINE,
                 MessageStates.REQUEST,
-                {
-                    'offline_client': client_name,
-                    'message': message
-                }
-            )), self.server_address)
+                messageData
+            ), self.server_address)
         except socket.error:
             self._print("Error: socket error while marking client {} offline".format(client_name))
 
@@ -57,16 +58,31 @@ class Client:
             print("Error: client {} not found in table".format(target_client))
             return
 
+        if self.table.is_client_offline(target_client):
+            try:
+                sent = self.client_socket.sendto(createMessage(
+                    MessageTypes.SAVE,
+                    MessageStates.REQUEST,
+                    {
+                        'offline_client': target_client,
+                        'message': message
+                    }
+                ), self.server_address)
+            except socket.error:
+                self._print("Error: socket error while sending message")
+            finally:
+                return
+
         target_address = tuple(entry['address'])
         try:
-            sent = self.client_socket.sendto(json.dumps(createMessage(
+            sent = self.client_socket.sendto(createMessage(
                 MessageTypes.SEND,
                 MessageStates.REQUEST,
                 {
                     'sender_name': self.nickname,
                     'message': message
                 }
-            )), target_address)
+            ), target_address)
             self.ack_table[target_client] = 'NO_ACK'
         except socket.error:
             self._print("Error: socket error while sending message")
@@ -108,10 +124,8 @@ class Client:
             }
         )
 
-        serialized = json.dumps(message)
-
         try:
-            sent = self.client_socket.sendto(serialized, self.server_address)
+            sent = self.client_socket.sendto(message, self.server_address)
         except socket.error:
             print >>sys.stderr, '>>> [Socket error - exiting ]'
             self.client_socket.close()

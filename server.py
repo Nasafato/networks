@@ -27,7 +27,7 @@ class Server:
     def _save_offline_message(self, data):
         message = data['message']
         client_name = data['offline_client']
-        if self.table.is_client_offline(client_name):
+        if not  self.table.is_client_offline(client_name):
             raise SaveMessageException("Client is not offline")
 
         self.table.save_offline_message(client_name, message)
@@ -37,12 +37,12 @@ class Server:
             for entry in self.table.get_entries():
                 client_address = entry['address']
                 print "Broadcasting to {}".format(client_address)
-                response = {
-                    'type': MessageTypes.BROADCAST,
-                    'state': MessageStates.SUCCESS,
-                    'data': self.table.table
-                }
-                sent = self.server_socket.sendto(json.dumps(response), client_address)
+                response = createMessage(
+                    MessageTypes.BROADCAST,
+                    MessageStates.SUCCESS,
+                    self.table.table
+                )
+                sent = self.server_socket.sendto(response, client_address)
                 print sent
         except socket.error:
             print "Couldn't send to client"
@@ -62,31 +62,32 @@ class Server:
         if messageType == MessageTypes.REGISTER and messageState == MessageStates.REQUEST:
             self._register_client(messageData, address)
             self._broadcast_table()
-            return {
-                'type': MessageTypes.REGISTER,
-                'state': MessageStates.SUCCESS,
-                'data': self.table.table
-            }
+            return createMessage(
+                MessageTypes.REGISTER,
+                MessageStates.SUCCESS,
+                self.table.table
+            )
         elif messageType == MessageTypes.OFFLINE and messageState == MessageStates.REQUEST:
             self._deregister_client(messageData)
             self._broadcast_table()
-            return {
-                'type': MessageTypes.OFFLINE,
-                'state': MessageStates.SUCCESS,
-                'data': messageData,
-            }
+            return createMessage(
+                MessageTypes.OFFLINE,
+                MessageStates.SUCCESS,
+                messageData,
+            )
         elif messageType == MessageTypes.SAVE and messageState == MessageStates.REQUEST:
             try:
-                self._save_offline_message(self, messageData)
+                self._save_offline_message(messageData)
                 return createMessage(MessageTypes.SAVE, MessageStates.SUCCESS, {})
             except SaveMessageException:
+                print "Failed to save message"
                 return createMessage(MessageTypes.SAVE, MessageStates.FAILURE, {})
         else:
-            return {
-                'type': MessageTypes.UNKNOWN,
-                'state': MessageStates.FAILURE,
-                'data': None
-            }
+            return createMessage(
+                MessageTypes.UNKNOWN,
+                MessageStates.FAILURE,
+                {}
+            )
 
     def _handle_message(self, message, address):
         message = self._deserialize_json(message)
@@ -94,7 +95,8 @@ class Server:
         response = self._get_response(message, address)
 
         if response:
-            self.server_socket.sendto(json.dumps(response), address)
+            print response
+            self.server_socket.sendto(response, address)
 
     def _run(self):
         while self.running:
