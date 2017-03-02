@@ -89,7 +89,8 @@ class Client:
             return
 
         time.sleep(0.5)
-        if self.ack_table[target_client] == 'ACK':
+        print(self.ack_table)
+        if self.ack_table[target_client] == 'ACKED':
             self.ack_table[target_client] == 'SUCCESS'
             return
 
@@ -143,7 +144,7 @@ class Client:
 
     def _handle_ack(self, data, address):
         responder_name = data['responder_name']
-
+        self.ack_table[responder_name] = 'ACKED'
 
     def _handle(self, message, address):
         message = self._deserialize_json(message)
@@ -160,6 +161,7 @@ class Client:
             self._print('[Client table updated.]')
         elif messageType == MessageTypes.SEND and messageState == MessageStates.REQUEST:
             self._send_ack_response(address)
+            self._print(messageData['message'])
         elif messageType == MessageTypes.SEND and messageState == MessageStates.RESPONSE:
             self._handle_ack(messageData, address)
         elif messageType == MessageTypes.SAVE and messageState == MessageStates.SUCCESS:
@@ -190,8 +192,6 @@ class Client:
             except KeyboardInterrupt:
                 print "Keyboard Interrupt"
                 self.stop()
-
-
 
     def start(self, prompt=True):
         self.in_prompt = prompt
