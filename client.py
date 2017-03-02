@@ -3,6 +3,7 @@ import sys
 import json
 import threading
 import re
+import time
 
 from table import ClientTable
 from message import MessageTypes, MessageStates, createMessage
@@ -16,6 +17,35 @@ class Client:
         self.table = None
         self.client_socket = None
         self.running = True
+        self.ack_table = {}
+
+    def _ack_request(self, target_client):
+        self.ack_table[target_client] = 'NO_ACK'
+
+    def _send_ack_response(self, address):
+        try:
+            sent = self.client_socket.sendto(json.dumps(createMessage(
+                MessageTypes.SEND,
+                MessageStates.RESPONSE,
+                {
+                    'responder_name': self.nickname
+                }
+            )), address)
+        except socket.error:
+            self._print("Error: socket error while sending ack")
+
+    def _mark_client_offline(self, client_name, message):
+        try:
+            sent = self.client_socket.sendto(json.dumps(createMessage(
+                MessageTypes.OFFLINE,
+                MessageStates.REQUEST,
+                {
+                    'offline_client': client_name,
+                    'message': message
+                }
+            )), self.server_address)
+        except socket.error:
+            self._print("Error: socket error while marking client {} offline".format(client_name))
 
     def _send_message(self, target_client, message):
         if target_client == self.nickname:
@@ -29,17 +59,25 @@ class Client:
 
         target_address = tuple(entry['address'])
         try:
-            self.client_socket.sendto(json.dumps(createMessage(
+            sent = self.client_socket.sendto(json.dumps(createMessage(
                 MessageTypes.SEND,
                 MessageStates.REQUEST,
                 {
+                    'sender_name': self.nickname,
                     'message': message
                 }
             )), target_address)
+            self.ack_table[target_client] = 'NO_ACK'
         except socket.error:
             self._print("Error: socket error while sending message")
             return
 
+        time.sleep(0.5)
+        if self.ack_table[target_client] == 'ACK':
+            self.ack_table[target_client] == 'SUCCESS'
+            return
+
+        self._mark_client_offline(target_client, message)
 
     def _process_input(self, user_input):
         split_data = user_input.split()
@@ -89,13 +127,17 @@ class Client:
         sys.stdout.write("{}\n>>> ".format(string))
         sys.stdout.flush()
 
+    def _handle_ack(self, data, address):
+        responder_name = data['responder_name']
+
+
     def _handle(self, message, address):
         message = self._deserialize_json(message)
+        print message
         messageType = message['type']
         messageState = message['state']
         messageData = message['data']
 
-        print message
 
         if messageType == MessageTypes.BROADCAST and messageState == MessageStates.SUCCESS:
             if not self.table:
@@ -103,11 +145,15 @@ class Client:
                 self._print('[Welcome, You are registered.]')
             self.table.update(messageData)
             self._print('[Client table updated.]')
-
+        elif messageType == MessageTypes.SEND and messageState == MessageStates.REQUEST:
+            self._send_ack_response(address)
+        elif messageType == MessageTypes.SEND and messageState == MessageStates.RESPONSE:
+            self._handle_ack(messageData, address)
         else:
             return {
                 'type': MessageTypes.UNKNOWN,
-                'state': MessageStates.FAILURE
+                'state': MessageStates.FAILURE,
+                'data': None
             }
 
     def _run(self):
@@ -120,7 +166,6 @@ class Client:
                 message, address = self.client_socket.recvfrom(10000)
                 handle_thread = threading.Thread(target=self._handle, args=[message, address])
                 handle_thread.start()
-                handle_thread.join()
             except socket.error:
                 print >>sys.stderr, '>>> [Socket error - exiting ]'
                 self.stop()

@@ -7,10 +7,12 @@ def enum(**enums):
 MessageTypes = enum(REGISTER='REGISTER',
     DEREGISTER='DEREGISTER',
     BROADCAST='BROADCAST',
+    OFFLINE='OFFLINE',
     UPDATE='UPDATE',
     SEND='SEND',
     UNKNOWN='UNKNOWN')
-MessageStates = enum(REQUEST='REQUEST', SUCCESS='SUCCESS', FAILURE='FAILURE')
+
+MessageStates = enum(REQUEST='REQUEST', RESPONSE='RESPONSE', SUCCESS='SUCCESS', FAILURE='FAILURE')
 
 class MessageTypesTestCase(unittest.TestCase):
     def test_basic(self):

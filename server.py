@@ -3,7 +3,7 @@ import sys
 import json
 import threading
 import pprint
-from table import ClientTable
+from table import ClientTable, MessageTable
 from message import MessageTypes, MessageStates, createMessage
 
 class Server:
@@ -14,16 +14,17 @@ class Server:
         self.server_address = None
         self.running = True
 
-    def signal_handler(self, signum, frame):
-        print "Signal"
-        if self.server_socket:
-            print "Closing server socket"
-            self.server_socket.close()
-
     def _register_client(self, data, address):
         new_table = self.table.register_client(data['name'], address, data['port'])
-        # print "Registering client {} at {}:{}".format(data['name'], address, data['port'])
-        # print "New table is {}".format(new_table)
+
+    def _deregister_client(self, data):
+        client_name = data['offline_client']
+        self.table.deregister_client(name)
+
+    def _save_offline_message(self, data):
+        message = data['message']
+        client_name = data['offline_client']
+        self.table.save_offline_message(client_name, message)
 
     def _broadcast_table(self):
         try:
@@ -39,9 +40,6 @@ class Server:
                 print sent
         except socket.error:
             print "Couldn't send to client"
-
-    def _deregister_client(self, name):
-        new_table = self.table.deregister_client(name)
 
     def _deserialize_json(self, data):
         try:
@@ -63,14 +61,19 @@ class Server:
                 'state': MessageStates.SUCCESS,
                 'data': self.table.table
             }
+        elif messageType == MessageTypes.OFFLINE and messageState == MessageStates.REQUEST:
+            self._deregister_client(self, messageData)
+            self._broadcast_table()
         else:
             return {
                 'type': MessageTypes.UNKNOWN,
-                'state': MessageStates.FAILURE
+                'state': MessageStates.FAILURE,
+                'data': None
             }
 
     def _handle_message(self, message, address):
         message = self._deserialize_json(message)
+        print message
         response = self._get_response(message, address)
 
         if response:
