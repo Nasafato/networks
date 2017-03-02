@@ -13,6 +13,9 @@ class Entry:
             'port': self.port
         })
 
+    def get_address(self):
+        return self.address
+
 class ClientTable:
     def __init__(self):
         self.table = {}
@@ -24,6 +27,9 @@ class ClientTable:
     def deregister_client(self, name):
         del self.table[name]
         return self.table
+
+    def get_entries(self):
+        return self.table.items()
 
     def __repr__(self):
         return pprint.pformat(self.table)

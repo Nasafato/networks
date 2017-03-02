@@ -30,14 +30,15 @@ class Client:
 
         try:
             sent = sock.sendto(serialized, server_address)
-            data, server = sock.recvfrom(4096)
+            data, server = sock.recvfrom(10000)
         finally:
+            print data
             print >>sys.stderr, '>>> [Welcome, You are registered.]'
             sock.close()
 
 
-    def start(self):
-        self.in_prompt = True
+    def start(self, prompt=True):
+        self.in_prompt = prompt
         self.register()
         while self.in_prompt:
             user_input = raw_input(">>> ")
