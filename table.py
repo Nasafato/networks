@@ -1,7 +1,6 @@
 import pprint
 import json
 
-
 class ClientTable:
     def __init__(self):
         self.table = {}
@@ -10,15 +9,22 @@ class ClientTable:
         self.table[name] = {
             'name': name,
             'address': address,
-            'port': port
+            'port': port,
+            'status': 'ONLINE'
         }
         return self.table
 
     def update(self, new_table):
         self.table = new_table
 
+    def lookup_client(self, name):
+        if name in self.table:
+            return self.table[name]
+        else:
+            return None
+
     def deregister_client(self, name):
-        del self.table[name]
+        self.table[name]['status'] = 'OFFLINE'
         return self.table
 
     def get_entries(self):

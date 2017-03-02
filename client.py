@@ -2,6 +2,7 @@ import socket
 import sys
 import json
 import threading
+import re
 
 from table import ClientTable
 from message import MessageTypes, MessageStates, createMessage
@@ -16,9 +17,39 @@ class Client:
         self.client_socket = None
         self.running = True
 
+    def _send_message(self, target_client, message):
+        if target_client == self.nickname:
+            print("Error: trying to send message to self")
+            return
+
+        entry = self.table.lookup_client(target_client)
+        if not entry:
+            print("Error: client {} not found in table".format(target_client))
+            return
+
+        target_address = tuple(entry['address'])
+        try:
+            self.client_socket.sendto(json.dumps(createMessage(
+                MessageTypes.SEND,
+                MessageStates.REQUEST,
+                {
+                    'message': message
+                }
+            )), target_address)
+        except socket.error:
+            self._print("Error: socket error while sending message")
+            return
+
+
+    def _process_input(self, user_input):
+        split_data = user_input.split()
+        if len(split_data) == 3 and split_data[0] == "send":
+            self._send_message(split_data[1], split_data[2])
+
     def _input(self):
         while self.running:
             user_input = raw_input(">>> ")
+            self._process_input(user_input)
 
     def stop(self):
         print "Stopping"
@@ -63,6 +94,8 @@ class Client:
         messageType = message['type']
         messageState = message['state']
         messageData = message['data']
+
+        print message
 
         if messageType == MessageTypes.BROADCAST and messageState == MessageStates.SUCCESS:
             if not self.table:

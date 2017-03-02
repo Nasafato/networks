@@ -83,12 +83,9 @@ class Server:
                 message, address = self.server_socket.recvfrom(10000)
                 handle_thread = threading.Thread(target=self._handle_message, args=[message, address])
                 handle_thread.start()
-                handle_thread.join()
-                print "Thread joined!"
             except socket.error:
                 print >>sys.stderr, 'Error while receiving/sending'
             except KeyboardInterrupt:
-                print "Stopped running"
                 self.stop()
 
     def stop(self):
