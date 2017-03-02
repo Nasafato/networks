@@ -2,6 +2,7 @@ import socket
 import sys
 import json
 import threading
+import pprint
 from table import ClientTable
 from message import MessageTypes, MessageStates, createMessage
 

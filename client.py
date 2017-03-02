@@ -54,7 +54,8 @@ class Client:
             raise Exception
 
     def _print(self, string):
-        print "{}\n>>> ".format(string)
+        sys.stdout.write("{}\n>>> ".format(string))
+        sys.stdout.flush()
 
     def _handle(self, message, address):
         message = self._deserialize_json(message)
@@ -63,7 +64,7 @@ class Client:
         messageData = message['data']
 
         if messageType == MessageTypes.BROADCAST and messageState == MessageStates.SUCCESS:
-            self._print(messageData)
+            # self._print(messageData)
         else:
             return {
                 'type': MessageTypes.UNKNOWN,
