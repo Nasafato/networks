@@ -12,7 +12,7 @@ class Client:
         self.server_address = server_address
         self.server_port = server_port
         self.port = port
-        self.table = ClientTable()
+        self.table = None
         self.client_socket = None
         self.running = True
 
@@ -65,8 +65,12 @@ class Client:
         messageData = message['data']
 
         if messageType == MessageTypes.BROADCAST and messageState == MessageStates.SUCCESS:
+            if not self.table:
+                self.table = ClientTable()
+                self._print('[Welcome, You are registered.]')
             self.table.update(messageData)
-            self._print(self.table)
+            self._print('[Client table updated.]')
+
         else:
             return {
                 'type': MessageTypes.UNKNOWN,
