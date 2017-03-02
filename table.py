@@ -5,7 +5,7 @@ import json
 class ClientTable:
     def __init__(self):
         self.table = {}
-        self.message_table = defaultdict([])
+        self.message_table = defaultdict(list)
 
     def register_client(self, name, address, port):
         self.table[name] = {
@@ -18,6 +18,9 @@ class ClientTable:
 
     def update(self, new_table):
         self.table = new_table
+
+    def is_client_offline(self, name):
+        return self.table[name]['status'] == 'OFFLINE'
 
     def lookup_client(self, name):
         if name in self.table:

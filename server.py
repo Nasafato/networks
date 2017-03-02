@@ -3,8 +3,11 @@ import sys
 import json
 import threading
 import pprint
-from table import ClientTable, MessageTable
+from table import ClientTable
 from message import MessageTypes, MessageStates, createMessage
+
+class SaveMessageException(Exception):
+    pass
 
 class Server:
     def __init__(self, port):
@@ -19,11 +22,14 @@ class Server:
 
     def _deregister_client(self, data):
         client_name = data['offline_client']
-        self.table.deregister_client(name)
+        self.table.deregister_client(client_name)
 
     def _save_offline_message(self, data):
         message = data['message']
         client_name = data['offline_client']
+        if self.table.is_client_offline(client_name):
+            raise SaveMessageException("Client is not offline")
+
         self.table.save_offline_message(client_name, message)
 
     def _broadcast_table(self):
@@ -62,8 +68,19 @@ class Server:
                 'data': self.table.table
             }
         elif messageType == MessageTypes.OFFLINE and messageState == MessageStates.REQUEST:
-            self._deregister_client(self, messageData)
+            self._deregister_client(messageData)
             self._broadcast_table()
+            return {
+                'type': MessageTypes.OFFLINE,
+                'state': MessageStates.SUCCESS,
+                'data': messageData,
+            }
+        elif messageType == MessageTypes.SAVE and messageState == MessageStates.REQUEST:
+            try:
+                self._save_offline_message(self, messageData)
+                return createMessage(MessageTypes.SAVE, MessageStates.SUCCESS, {})
+            except SaveMessageException:
+                return createMessage(MessageTypes.SAVE, MessageStates.FAILURE, {})
         else:
             return {
                 'type': MessageTypes.UNKNOWN,

@@ -9,6 +9,7 @@ MessageTypes = enum(REGISTER='REGISTER',
     BROADCAST='BROADCAST',
     OFFLINE='OFFLINE',
     UPDATE='UPDATE',
+    SAVE='SAVE',
     SEND='SEND',
     UNKNOWN='UNKNOWN')
 
