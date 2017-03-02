@@ -1,11 +1,11 @@
 import unittest
 import pickle
 
-def enum(*sequential, **named):
-    enums = dict(zip(sequential, range(len(sequential))), **named)
+def enum(**enums):
     return type('Enum', (), enums)
 
-MessageTypes = enum('REGISTER', 'DEREGISTER', 'UPDATE')
+MessageTypes = enum(REGISTER='REGISTER', DEREGISTER='DEREGISTER', UPDATE='UPDATE', UNKNOWN='UNKNOWN')
+MessageStates = enum(REQUEST='REQUEST', SUCCESS='SUCCESS', FAILURE='FAILURE')
 
 class MessageTypesTestCase(unittest.TestCase):
     def test_basic(self):
@@ -23,14 +23,16 @@ class CreateMessageTestCase(unittest.TestCase):
 
         targetMessage = {
             'type': MessageTypes.REGISTER,
+            'state': MessageStates.REQUEST,
             'data': messageData,
         }
 
         self.assertEqual(createMessage(messageType, messageData), targetMessage)
 
-def createMessage(messageType, messageData):
+def createMessage(messageType, messageState, messageData):
     return {
         'type': messageType,
+        'state': messageState,
         'data': messageData,
     }
 

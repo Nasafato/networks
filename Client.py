@@ -2,7 +2,8 @@ import socket
 import sys
 import json
 
-from message import MessageTypes, createMessage
+from table import ClientTable
+from message import MessageTypes, MessageStates, createMessage
 
 class Client:
     def __init__(self, nickname, server_address, server_port, port):
@@ -18,9 +19,10 @@ class Client:
 
         message = createMessage(
             MessageTypes.REGISTER,
+            MessageStates.REQUEST,
             {
-                'client_name': self.nickname,
-                'client_port': self.port
+                'name': self.nickname,
+                'port': self.port
             }
         )
 
