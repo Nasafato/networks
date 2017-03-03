@@ -142,6 +142,8 @@ class Client:
             self._send_message(split_data[1], split_data[2])
         elif len(split_data) == 2 and split_data[0] == "dereg":
             self._dereg(split_data[1])
+        elif len(split_data) == 2 and split_data[0] == "reg":
+            self.register(split_data[1])
         else:
             print "Error: invalid command"
 
@@ -150,12 +152,15 @@ class Client:
             user_input = raw_input(">>> ")
             self._process_input(user_input)
 
-    def register(self):
+    def register(self, name=None):
+        if not name:
+            name = self.nickname
+
         message = createMessage(
             MessageTypes.REGISTER,
             MessageStates.REQUEST,
             {
-                'name': self.nickname,
+                'name': name,
                 'port': self.port
             }
         )
