@@ -35,6 +35,9 @@ class ClientTable:
     def save_offline_message(self, name, message):
         self.message_table[name].append(message)
 
+    def clear_messages(self, name):
+        self.message_table[name] = []
+
     def get_offline_messages(self, name):
         return self.message_table[name]
 
