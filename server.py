@@ -69,7 +69,7 @@ class Server:
         except Exception:
             raise Exception
 
-    def _send_offline_messages(data, address):
+    def _send_offline_messages(self, data, address):
         name = data['name']
         messages = self.table.get_offline_messages(name)
         if not messages:
