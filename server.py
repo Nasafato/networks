@@ -43,7 +43,7 @@ class Server:
         message = data['message']
         client_name = data['offline_client']
         if not self.table.is_client_offline(client_name):
-            raise SaveMessageException("Client is not offline")
+            raise SaveMessageException("Client {} exists!!".format(client_name))
 
         self.table.save_offline_message(client_name, message)
 
@@ -69,6 +69,25 @@ class Server:
         except Exception:
             raise Exception
 
+    def _send_offline_messages(data, address):
+        name = data['name']
+        messages = self.table.get_offline_messages(name)
+        if not messages:
+            return
+
+        try:
+            self.server_socket.sendto(createMessage(
+                MessageTypes.MESSAGES,
+                MessageStates.SUCCESS,
+                {
+                    'messages': messages
+                }
+            ), address)
+        except socket.error, msg:
+            print "Error sending messags: {}".format(msg)
+
+        self.table.clear_messages(name)
+
     def _get_response(self, message, address):
         pprint.pprint(message)
         messageType = message['type']
@@ -77,6 +96,7 @@ class Server:
 
         if messageType == MessageTypes.REGISTER and messageState == MessageStates.REQUEST:
             try:
+                self._send_offline_messages(messageData, address)
                 self._register_client(messageData, address)
                 self._broadcast_table()
                 return createMessage(
@@ -104,9 +124,10 @@ class Server:
             try:
                 self._save_offline_message(messageData)
                 return createMessage(MessageTypes.SAVE, MessageStates.SUCCESS, {})
-            except SaveMessageException:
+            except SaveMessageException, msg:
                 print "Failed to save message"
-                return createMessage(MessageTypes.SAVE, MessageStates.FAILURE, {})
+                self._broadcast_table()
+                return createMessage(MessageTypes.SAVE, MessageStates.FAILURE, { 'error': msg})
         elif messageType == MessageTypes.DEREG and messageState == MessageStates.REQUEST:
             try:
                 self._deregister_client(messageData)

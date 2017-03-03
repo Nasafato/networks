@@ -189,6 +189,11 @@ class Client:
         responder_name = data['responder_name']
         self.ack_table[responder_name] = 'ACKED'
 
+    def _display_messages(self, data):
+        messages = data['messages']
+        for message in messages:
+            self._print(message)
+
     def _handle(self, message, address):
         message = self._deserialize_json(message)
         pprint.pprint(message)
@@ -209,12 +214,17 @@ class Client:
             self._handle_ack(messageData, address)
         elif messageType == MessageTypes.SAVE and messageState == MessageStates.SUCCESS:
             self._print('[Messages received by the server and saved]')
+        elif messageType == MessageTypes.SAVE and messageState == MessageStates.FAILURE:
+            self._print('[{}]'.format(messageData['error']))
         elif messageType == MessageTypes.OFFLINE and messageState == MessageStates.SUCCESS:
             self._print('[No ACK from {}, message sent to server.]'.format(messageData['offline_client']))
             self._print('[Messages received by the server and saved]')
         elif messageType == MessageTypes.REGISTER and messageState == MessageStates.FAILURE:
             self._print('[ERROR: {}]'.format(messageData['error']))
             self.stop()
+        elif messageType = MessageTypes.MESSAGES and messageState = MessageStates.SUCCESS:
+            self._print('[You have messages]')
+            self._display_messages(messageData)
         elif messageType == MessageTypes.DEREG and messageState == MessageStates.SUCCESS:
             self.dereg_success = True
         else:
