@@ -9,6 +9,9 @@ from message import MessageTypes, MessageStates, createMessage
 class SaveMessageException(Exception):
     pass
 
+class ClientExistsException(Exception):
+    pass
+
 class Server:
     def __init__(self, port):
         self.port = port
@@ -18,7 +21,12 @@ class Server:
         self.running = True
 
     def _register_client(self, data, address):
-        new_table = self.table.register_client(data['name'], address, data['port'])
+        name = data['name']
+        port = data['port']
+        if self.table.lookup_client(name):
+            raise ClientExistsException
+
+        self.table.register_client(data['name'], address, data['port'])
 
     def _deregister_client(self, data):
         client_name = data['offline_client']
@@ -61,13 +69,21 @@ class Server:
         messageData = message['data']
 
         if messageType == MessageTypes.REGISTER and messageState == MessageStates.REQUEST:
-            self._register_client(messageData, address)
-            self._broadcast_table()
-            return createMessage(
-                MessageTypes.REGISTER,
-                MessageStates.SUCCESS,
-                self.table.table
-            )
+            try:
+                self._register_client(messageData, address)
+                self._broadcast_table()
+                return createMessage(
+                    MessageTypes.REGISTER,
+                    MessageStates.SUCCESS,
+                    self.table.table
+                )
+            except ClientExistsException:
+                self.stop()
+                return createMessage(
+                    MessageTypes.REGISTER,
+                    MessageStates.FAILURE,
+                    self.table.table
+                )
         elif messageType == MessageTypes.OFFLINE and messageState == MessageStates.REQUEST:
             self._deregister_client(messageData)
             self._broadcast_table()

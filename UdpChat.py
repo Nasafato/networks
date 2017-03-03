@@ -16,7 +16,10 @@ def parse_command_line():
     args = parser.parse_args()
     if args.server:
         server = Server(args.server)
-        server.start()
+        try:
+            server.start()
+        except KeyboardInterrupt:
+            server.stop()
     elif args.client:
         client_args = extract_client_args(args)
         client = Client(
@@ -25,7 +28,11 @@ def parse_command_line():
             client_args['server_port'],
             client_args['client_port']
         )
-        client.start()
+        try:
+            client.start()
+        except KeyboardInterrupt:
+            print "Caught keyboard interrupt in UdpChat"
+            client.stop()
     else:
         raise Exception("No arguments")
 
