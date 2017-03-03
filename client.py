@@ -204,6 +204,8 @@ class Client:
             self._handle_ack(messageData, address)
         elif messageType == MessageTypes.SAVE and messageState == MessageStates.SUCCESS:
             self._print('[Messages received by the server and saved]')
+        elif messageType == MessageTypes.SAVE and messageState == MessageStates.FAILURE:
+            self._print('[{}]'.format(messageData['error']))
         elif messageType == MessageTypes.OFFLINE and messageState == MessageStates.SUCCESS:
             self._print('[No ACK from {}, message sent to server.]'.format(messageData['offline_client']))
             self._print('[Messages received by the server and saved]')

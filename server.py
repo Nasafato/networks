@@ -43,7 +43,7 @@ class Server:
         message = data['message']
         client_name = data['offline_client']
         if not self.table.is_client_offline(client_name):
-            raise SaveMessageException("Client is not offline")
+            raise SaveMessageException("Client {} exists!!".format(client_name))
 
         self.table.save_offline_message(client_name, message)
 
@@ -104,9 +104,9 @@ class Server:
             try:
                 self._save_offline_message(messageData)
                 return createMessage(MessageTypes.SAVE, MessageStates.SUCCESS, {})
-            except SaveMessageException:
+            except SaveMessageException, msg:
                 print "Failed to save message"
-                return createMessage(MessageTypes.SAVE, MessageStates.FAILURE, {})
+                return createMessage(MessageTypes.SAVE, MessageStates.FAILURE, { 'error': msg})
         elif messageType == MessageTypes.DEREG and messageState == MessageStates.REQUEST:
             try:
                 self._deregister_client(messageData)
