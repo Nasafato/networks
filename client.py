@@ -102,7 +102,6 @@ class Client:
         self._mark_client_offline(target_client, message)
 
     def _dereg(self, client_name):
-        print "Deregging {}".format(client_name)
         if not self.table.lookup_client(client_name):
             self._print("[ERROR: Client {} doesn't exist in table.]".format(client_name))
             return
@@ -167,7 +166,6 @@ class Client:
 
         try:
             sent = self.client_socket.sendto(message, self.server_address)
-            print sent
             message, address = self.client_socket.recvfrom(10000)
             self._handle(message, address)
         except socket.error, msg:
@@ -196,7 +194,7 @@ class Client:
 
     def _handle(self, message, address):
         message = self._deserialize_json(message)
-        pprint.pprint(message)
+        # pprint.pprint(message)
         messageType = message['type']
         messageState = message['state']
         messageData = message['data']
@@ -256,7 +254,8 @@ class Client:
             while self.running:
                 time.sleep(1)
         except KeyboardInterrupt:
-            print "Caught keyboardInterrupt - stopping main thread"
+            # print "Caught keyboardInterrupt - stopping main thread"
+            pass
 
     def start(self, prompt=True):
         try:
@@ -269,7 +268,8 @@ class Client:
             self.register()
             self._run()
         except KeyboardInterrupt:
-            print "Caught another keyboardInterrupt"
+            pass
+            # print "Caught another keyboardInterrupt"
 
     def stop(self):
         self.running = False

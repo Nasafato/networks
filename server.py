@@ -51,16 +51,16 @@ class Server:
         try:
             for entry in self.table.get_entries():
                 client_address = entry['address']
-                print "Broadcasting to {}".format(client_address)
+                # print "Broadcasting to {}".format(client_address)
                 response = createMessage(
                     MessageTypes.BROADCAST,
                     MessageStates.SUCCESS,
                     self.table.table
                 )
                 sent = self.server_socket.sendto(response, client_address)
-                print sent
+                # print sent
         except socket.error:
-            print "Couldn't send to client"
+            # print "Couldn't send to client"
 
     def _deserialize_json(self, data):
         try:
@@ -89,7 +89,7 @@ class Server:
         self.table.clear_messages(name)
 
     def _get_response(self, message, address):
-        pprint.pprint(message)
+        # pprint.pprint(message)
         messageType = message['type']
         messageState = message['state']
         messageData = message['data']
@@ -148,10 +148,10 @@ class Server:
     def _handle_message(self, message, address):
         message = self._deserialize_json(message)
         response = self._get_response(message, address)
-        print address
+        # print address
 
         if response:
-            print response
+            # print response
             sent = self.server_socket.sendto(response, address)
 
     def _run(self):
