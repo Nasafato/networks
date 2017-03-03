@@ -1,5 +1,6 @@
 import socket
 import sys
+import pprint
 import json
 import threading
 import pprint
@@ -29,9 +30,13 @@ class Server:
         self.table.register_client(data['name'], address, data['port'])
 
     def _deregister_client(self, data):
-        client_name = data['offline_client']
+        if 'offline_client' in data:
+            client_name = data['offline_client']
+        else:
+            client_name = data['dereg_name']
         self.table.deregister_client(client_name)
-        self._save_offline_message(data)
+        if 'message' in data:
+            self._save_offline_message(data)
 
     def _save_offline_message(self, data):
         message = data['message']
@@ -64,6 +69,7 @@ class Server:
             raise Exception
 
     def _get_response(self, message, address):
+        pprint.pprint(message)
         messageType = message['type']
         messageState = message['state']
         messageData = message['data']
@@ -98,6 +104,16 @@ class Server:
             except SaveMessageException:
                 print "Failed to save message"
                 return createMessage(MessageTypes.SAVE, MessageStates.FAILURE, {})
+        elif messageType == MessageTypes.DEREG and messageState == MessageStates.REQUEST:
+            try:
+                self._deregister_client(messageData)
+                self._broadcast_table()
+                return createMessage(MessageTypes.DEREG, MessageStates.SUCCESS,
+                        messageData)
+            except Exception, msg:
+                print "Some sort of exception {}".format(msg)
+                return createMessage(MessageTypes.DEREG, MessageStates.FAILURE,
+                        messageData)
         else:
             return createMessage(
                 MessageTypes.UNKNOWN,
