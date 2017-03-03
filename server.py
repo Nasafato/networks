@@ -60,7 +60,7 @@ class Server:
                 sent = self.server_socket.sendto(response, client_address)
                 # print sent
         except socket.error:
-            # print "Couldn't send to client"
+            print "Couldn't send to client"
 
     def _deserialize_json(self, data):
         try:
