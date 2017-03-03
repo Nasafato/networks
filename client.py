@@ -151,7 +151,9 @@ class Client:
 
     def register(self):
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.client_socket.bind(('localhost', self.port))
+        host = socket.gethostname()
+        self.client_address = (host, self.port)
+        self.client_socket.bind(self.client_address)
         self.server_address = (self.server_address, self.server_port)
 
         message = createMessage(
@@ -165,6 +167,7 @@ class Client:
 
         try:
             sent = self.client_socket.sendto(message, self.server_address)
+            print sent
             message, address = self.client_socket.recvfrom(10000)
             self._handle(message, address)
         except socket.error, msg:
