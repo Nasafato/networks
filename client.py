@@ -2,6 +2,7 @@ import socket
 import thread
 import sys
 import json
+import pprint
 import threading
 import re
 import time
@@ -195,6 +196,7 @@ class Client:
 
     def _handle(self, message, address):
         message = self._deserialize_json(message)
+        pprint.pprint(message)
         messageType = message['type']
         messageState = message['state']
         messageData = message['data']
@@ -241,17 +243,23 @@ class Client:
         input_thread.daemon = True
         input_thread.start()
 
-        listen_thread = threading.Thread(target=self._input)
+        listen_thread = threading.Thread(target=self._listen)
         listen_thread.daemon = True
         listen_thread.start()
 
-        while self.running:
-            time.sleep(1)
+        try:
+            while self.running:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            print "Caught keyboardInterrupt - stopping main thread"
 
     def start(self, prompt=True):
-        self.in_prompt = prompt
-        self.register()
-        self._run()
+        try:
+            self.in_prompt = prompt
+            self.register()
+            self._run()
+        except KeyboardInterrupt:
+            print "Caught another keyboardInterrupt"
 
     def stop(self):
         self.running = False
