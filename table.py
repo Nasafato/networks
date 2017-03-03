@@ -33,9 +33,9 @@ class ClientTable:
         self.table[name]['status'] = 'OFFLINE'
         return self.table
 
-    def save_offline_message(self, name, message):
-        self.message_table[name].append((
-            name,
+    def save_offline_message(self, offline_name, sender_name, message):
+        self.message_table[offline_name].append((
+            sender_name,
             time.time(),
             message
         ))
