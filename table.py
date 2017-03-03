@@ -1,4 +1,5 @@
 import pprint
+import time
 from collections import defaultdict
 import json
 
@@ -33,7 +34,11 @@ class ClientTable:
         return self.table
 
     def save_offline_message(self, name, message):
-        self.message_table[name].append(message)
+        self.message_table[name].append((
+            name,
+            time.time(),
+            message
+        ))
 
     def clear_messages(self, name):
         self.message_table[name] = []
