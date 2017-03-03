@@ -40,6 +40,7 @@ class Client:
             self._print("Error: socket error while sending ack")
 
     def _mark_client_offline(self, client_name, message):
+        self._dereg(client_name)
         messageData =   {
             'offline_client': client_name,
             'message': message
@@ -69,6 +70,7 @@ class Client:
                     MessageTypes.SAVE,
                     MessageStates.REQUEST,
                     {
+                        'sender_name': self.nickname,
                         'offline_client': target_client,
                         'message': message
                     }

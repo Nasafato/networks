@@ -41,7 +41,7 @@ class Server:
 
     def _save_offline_message(self, data):
         message = data['message']
-        client_name = data['offline_client']
+        client_name = data['sender_name']
         if not self.table.is_client_offline(client_name):
             raise SaveMessageException("Client {} exists!!".format(client_name))
 
