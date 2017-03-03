@@ -151,16 +151,6 @@ class Client:
             self._process_input(user_input)
 
     def register(self):
-        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        host = socket.gethostbyname(socket.gethostname())
-        self.client_address = (host, self.port)
-        self.client_socket.bind(self.client_address)
-        self.server_address = (self.server_address, self.server_port)
-
-        print(self.client_address)
-        print(self.server_address)
-
-
         message = createMessage(
             MessageTypes.REGISTER,
             MessageStates.REQUEST,
@@ -218,7 +208,7 @@ class Client:
             self._print('[No ACK from {}, message sent to server.]'.format(messageData['offline_client']))
             self._print('[Messages received by the server and saved]')
         elif messageType == MessageTypes.REGISTER and messageState == MessageStates.FAILURE:
-            self._print('[ERROR: client with that name already exists]')
+            self._print('[ERROR: {}]'.format(messageData['error']))
             self.stop()
         elif messageType == MessageTypes.DEREG and messageState == MessageStates.SUCCESS:
             self.dereg_success = True
@@ -256,6 +246,11 @@ class Client:
     def start(self, prompt=True):
         try:
             self.in_prompt = prompt
+            self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            host = socket.gethostbyname(socket.gethostname())
+            self.client_address = (host, self.port)
+            self.client_socket.bind(self.client_address)
+            self.server_address = (self.server_address, self.server_port)
             self.register()
             self._run()
         except KeyboardInterrupt:

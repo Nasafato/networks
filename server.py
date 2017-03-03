@@ -24,8 +24,9 @@ class Server:
     def _register_client(self, data, address):
         name = data['name']
         port = data['port']
-        if self.table.lookup_client(name):
-            raise ClientExistsException
+        client_lookup = self.table.lookup_client(name)
+        if client_lookup and client_lookup['status'] == 'ONLINE':
+            raise ClientExistsException("Registering client that is still online")
 
         self.table.register_client(data['name'], address, data['port'])
 
@@ -83,11 +84,13 @@ class Server:
                     MessageStates.SUCCESS,
                     self.table.table
                 )
-            except ClientExistsException:
+            except ClientExistsException, msg:
                 return createMessage(
                     MessageTypes.REGISTER,
                     MessageStates.FAILURE,
-                    self.table.table
+                    {
+                        'error': msg
+                    }
                 )
         elif messageType == MessageTypes.OFFLINE and messageState == MessageStates.REQUEST:
             self._deregister_client(messageData)
@@ -128,7 +131,7 @@ class Server:
 
         if response:
             print response
-            self.server_socket.sendto(response, address)
+            sent = self.server_socket.sendto(response, address)
 
     def _run(self):
         while self.running:
