@@ -118,7 +118,7 @@ class Client:
                     }
                 ), self.server_address)
             except socket.error:
-                print "Error: socket failed while sending dereg request"
+                self._print("Error: socket failed while sending dereg request")
             time.sleep(0.5)
             if (self.dereg_success == True):
                 self._print('[You are Offline. Bye.]')
@@ -144,7 +144,7 @@ class Client:
         elif len(split_data) == 2 and split_data[0] == "reg":
             self.register(split_data[1])
         else:
-            print "Error: invalid command"
+            self._print("Error: invalid command")
 
     def _input(self):
         while self.running:
@@ -169,7 +169,7 @@ class Client:
             message, address = self.client_socket.recvfrom(10000)
             self._handle(message, address)
         except socket.error, msg:
-            print "Caught exception socket.error {}".format(msg)
+            self._print("Caught exception socket.error {}".format(msg))
             self.client_socket.close()
 
     def _deserialize_json(self, data):
@@ -180,7 +180,7 @@ class Client:
             raise Exception
 
     def _print(self, string):
-        sys.stdout.write("{}\n>>> ".format(string))
+        sys.stdout.write(">>> {}\n".format(string))
         sys.stdout.flush()
 
     def _handle_ack(self, data, address):
@@ -238,7 +238,7 @@ class Client:
                 handle_thread = threading.Thread(target=self._handle, args=[message, address])
                 handle_thread.start()
             except socket.error:
-                print >>sys.stderr, '>>> [Socket error - exiting ]'
+                self._print('Socket error - exiting')
                 self.stop()
 
     def _run(self):

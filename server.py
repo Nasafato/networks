@@ -109,7 +109,7 @@ class Server:
                     MessageTypes.REGISTER,
                     MessageStates.FAILURE,
                     {
-                        'error': msg
+                        'error': str(msg)
                     }
                 )
         elif messageType == MessageTypes.OFFLINE and messageState == MessageStates.REQUEST:
@@ -127,7 +127,7 @@ class Server:
             except SaveMessageException, msg:
                 print "Failed to save message"
                 self._broadcast_table()
-                return createMessage(MessageTypes.SAVE, MessageStates.FAILURE, { 'error': msg})
+                return createMessage(MessageTypes.SAVE, MessageStates.FAILURE, { 'error': str(msg)})
         elif messageType == MessageTypes.DEREG and messageState == MessageStates.REQUEST:
             try:
                 self._deregister_client(messageData)
