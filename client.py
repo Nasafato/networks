@@ -222,7 +222,7 @@ class Client:
         elif messageType == MessageTypes.REGISTER and messageState == MessageStates.FAILURE:
             self._print('[ERROR: {}]'.format(messageData['error']))
             self.stop()
-        elif messageType = MessageTypes.MESSAGES and messageState = MessageStates.SUCCESS:
+        elif messageType == MessageTypes.MESSAGES and messageState == MessageStates.SUCCESS:
             self._print('[You have messages]')
             self._display_messages(messageData)
         elif messageType == MessageTypes.DEREG and messageState == MessageStates.SUCCESS:
