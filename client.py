@@ -192,7 +192,7 @@ class Client:
     def _display_messages(self, data):
         messages = data['messages']
         for (client, timestamp, message) in messages:
-            self._print("{} {}: {}".format(client, timestamp, message))
+            self._print("{}: {} {}".format(client, timestamp, message))
 
     def _handle(self, message, address):
         message = self._deserialize_json(message)
