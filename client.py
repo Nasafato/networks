@@ -151,7 +151,7 @@ class Client:
 
     def register(self):
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        host = socket.gethostname()
+        host = socket.gethostbyname(socket.gethostname())
         self.client_address = (host, self.port)
         self.client_socket.bind(self.client_address)
         self.server_address = (self.server_address, self.server_port)
