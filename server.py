@@ -107,8 +107,8 @@ class Server:
 
     def _handle_message(self, message, address):
         message = self._deserialize_json(message)
-        print message
         response = self._get_response(message, address)
+        print address
 
         if response:
             print response
@@ -134,7 +134,6 @@ class Server:
         host = socket.gethostbyname(socket.gethostname())
         self.server_address = (host, self.port)
         self.server_socket.bind(self.server_address)
-        print(self.server_address)
         self._run()
 
 if __name__ == "__main__":
