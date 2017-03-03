@@ -78,7 +78,6 @@ class Server:
                     self.table.table
                 )
             except ClientExistsException:
-                self.stop()
                 return createMessage(
                     MessageTypes.REGISTER,
                     MessageStates.FAILURE,
@@ -132,7 +131,7 @@ class Server:
 
     def start(self):
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.server_address = ('localhost', self.port)
+        self.server_address = ('0.0.0.0', self.port)
         self.server_socket.bind(self.server_address)
         self._run()
 

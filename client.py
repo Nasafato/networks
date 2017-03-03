@@ -131,9 +131,9 @@ class Client:
         if not self.dereg_success:
             self._print('[Server not responding]')
             self._print('[Exiting]')
+            self.stop()
 
         self.dereg_success = False
-        self.stop()
 
     def _process_input(self, user_input):
         split_data = user_input.split()
@@ -151,6 +151,7 @@ class Client:
 
     def register(self):
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.client_socket.bind(('localhost', self.port))
         self.server_address = (self.server_address, self.server_port)
 
         message = createMessage(
@@ -166,8 +167,8 @@ class Client:
             sent = self.client_socket.sendto(message, self.server_address)
             message, address = self.client_socket.recvfrom(10000)
             self._handle(message, address)
-        except socket.error:
-            print >>sys.stderr, '>>> [Socket error - exiting ]'
+        except socket.error, msg:
+            print "Caught exception socket.error {}".format(msg)
             self.client_socket.close()
 
     def _deserialize_json(self, data):
