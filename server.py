@@ -131,8 +131,10 @@ class Server:
 
     def start(self):
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.server_address = ('0.0.0.0', self.port)
+        host = socket.gethostname()
+        self.server_address = (host, self.port)
         self.server_socket.bind(self.server_address)
+        print(self.server_address)
         self._run()
 
 if __name__ == "__main__":

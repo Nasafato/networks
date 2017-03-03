@@ -156,6 +156,10 @@ class Client:
         self.client_socket.bind(self.client_address)
         self.server_address = (self.server_address, self.server_port)
 
+        print(self.client_address)
+        print(self.server_address)
+
+
         message = createMessage(
             MessageTypes.REGISTER,
             MessageStates.REQUEST,
